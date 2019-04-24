@@ -17,6 +17,9 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -98,13 +101,23 @@ public class MainActivity extends AppCompatActivity {
                             public void onResponse(String response) {
                                 // Display the first 500 characters of the response string.
 //                                textView.setText("Response is: " + response.substring(0, 500));
-                                Log.e("Rest Response", response.toString());
+                                String json = response.toString();
+                                Log.e("Rest Response", json);
+
+                                JsonParser parser = new JsonParser();
+                                JsonElement jsonTree = parser.parse(json);
+                                JsonObject jsonObject = jsonTree.getAsJsonObject();
+                                translatedString = jsonObject.get("contents").getAsJsonObject().get("translated").getAsString();
+
+                                displayBlock.setText(translatedString);
                             }
                         },
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 Log.e("Rest Response", error.toString());
+                                String errorMsg = "Can not translate the text.";
+                                displayBlock.setText(errorMsg);
                             }
                         }
                 );
