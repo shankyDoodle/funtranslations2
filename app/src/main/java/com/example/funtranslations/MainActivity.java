@@ -1,6 +1,7 @@
 package com.example.funtranslations;
 
 import android.speech.tts.TextToSpeech;
+import android.speech.tts.Voice;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,8 +26,10 @@ import com.google.gson.JsonParser;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -89,14 +92,20 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        tts=new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+        tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
-                if(status != TextToSpeech.ERROR) {
+                if (status != TextToSpeech.ERROR) {
                     tts.setLanguage(Locale.US);
+
+                    Set<String> a = new HashSet<>();
+                    a.add("male");
+                    Voice v = new Voice("en-us-x-sfg#male_2-local", new Locale("en", "US"), 400, 200, true, a);
+                    tts.setVoice(v);
                 }
             }
         });
+
 
         final RequestQueue queue = Volley.newRequestQueue(this);
 
@@ -106,18 +115,14 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 inputText = inputBlock.getText().toString();
 
-                String localURL = reqURL + ".json?text="+ URLEncoder.encode(inputText);
+                String localURL = reqURL + ".json?text=" + URLEncoder.encode(inputText);
                 StringRequest stringRequest = new StringRequest(
                         Request.Method.GET,
                         localURL,
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
-                                // Display the first 500 characters of the response string.
-//                                textView.setText("Response is: " + response.substring(0, 500));
                                 String json = response.toString();
-                                Log.e("Rest Response", json);
-
                                 JsonParser parser = new JsonParser();
                                 JsonElement jsonTree = parser.parse(json);
                                 JsonObject jsonObject = jsonTree.getAsJsonObject();
@@ -145,7 +150,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String toSpeak = displayBlock.getText().toString();
-//                Toast.makeText(getApplicationContext(), toSpeak,Toast.LENGTH_SHORT).show();
                 tts.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
             }
         });
